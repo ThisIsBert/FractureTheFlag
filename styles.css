@@ -12,6 +12,8 @@
   --tile-border: rgba(255, 255, 255, 0.18);
   --success: #166534;
   --danger: #9f1239;
+  --success-glow: rgba(22, 101, 52, 0.62);
+  --danger-glow: rgba(159, 18, 57, 0.58);
   --shadow: 0 22px 50px rgba(16, 37, 66, 0.12);
   font-family: Georgia, "Times New Roman", serif;
 }
@@ -133,6 +135,8 @@ dd {
   overflow: hidden;
   border-radius: 1.25rem;
   border: 1px solid rgba(16, 37, 66, 0.14);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  transition: border-color 220ms ease, box-shadow 220ms ease;
   background:
     linear-gradient(135deg, rgba(16, 37, 66, 0.08), rgba(16, 37, 66, 0.02)),
     linear-gradient(45deg, rgba(255, 255, 255, 0.72) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.72) 75%),
@@ -140,6 +144,16 @@ dd {
   background-size: auto, 24px 24px, 24px 24px;
   background-position: 0 0, 0 0, 12px 12px;
   aspect-ratio: 3 / 2;
+}
+
+.flag-frame.is-success {
+  border-color: var(--success);
+  box-shadow: 0 0 0 0.42rem var(--success-glow), 0 0 1.4rem 0.2rem var(--success-glow);
+}
+
+.flag-frame.is-danger {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 0.42rem var(--danger-glow), 0 0 1.4rem 0.2rem var(--danger-glow);
 }
 
 .flag-image,

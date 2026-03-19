@@ -204,28 +204,38 @@ const revealAllTiles = () => {
   updateVisibility();
 };
 
+const setFlagFrameTone = (tone) => {
+  elements.flagFrame.classList.remove("is-success", "is-danger");
+  elements.flagFrame.classList.add(tone === "success" ? "is-success" : "is-danger");
+};
+
 const finishRound = (success) => {
+  const visibility = getVisibilityPercent();
   state.finishedRound = true;
   revealAllTiles();
   elements.guessInput.disabled = true;
   elements.nextButton.hidden = state.currentIndex >= state.deck.length - 1;
   elements.restartButton.hidden = state.currentIndex < state.deck.length - 1;
+  elements.flagRevealButton.ariaLabel =
+    state.currentIndex >= state.deck.length - 1 ? "Neuen Lauf starten" : "Naechste Flagge starten";
+  elements.roundOverlay.hidden = true;
+  elements.roundOverlay.textContent = "";
 
   if (success) {
-    const visibility = getVisibilityPercent();
+    setFlagFrameTone("success");
     state.correctCount += 1;
     state.successVisibilities.push(visibility);
     setMessage(
-      `Richtig: ${state.currentCountry.name}. Du hast die Flagge bei ${visibility}% Sichtbarkeit erkannt.`,
+      `Richtig: ${state.currentCountry.name}. Du hast die Flagge bei ${visibility}% Sichtbarkeit erkannt. Tippe auf die Flagge fuer die naechste Runde.`,
       "success"
     );
-    elements.roundOverlay.hidden = false;
-    elements.roundOverlay.textContent = `${state.currentCountry.name} erkannt`;
   } else {
+    setFlagFrameTone("danger");
     state.wrongCount += 1;
-    setMessage(`Falsch. Es war ${state.currentCountry.name}.`, "danger");
-    elements.roundOverlay.hidden = false;
-    elements.roundOverlay.textContent = `${state.currentCountry.name} war gesucht`;
+    setMessage(
+      `Falsch. Es war ${state.currentCountry.name}. Tippe auf die Flagge fuer die naechste Runde.`,
+      "danger"
+    );
   }
 
   updateScoreboard();
@@ -240,10 +250,12 @@ const loadRound = () => {
   state.currentCountry = state.deck[state.currentIndex];
   state.revealed = new Set();
   state.finishedRound = false;
+  elements.flagFrame.classList.remove("is-success", "is-danger");
   elements.flagImage.src = state.currentCountry.asset;
   elements.flagImage.alt = `Verdeckte Flagge von ${state.currentCountry.name}`;
   elements.flagImage.hidden = false;
   elements.flagRevealButton.disabled = false;
+  elements.flagRevealButton.ariaLabel = "Eine weitere Kachel aufdecken";
   elements.roundOverlay.hidden = true;
   elements.roundOverlay.textContent = "";
   elements.guessInput.disabled = false;
