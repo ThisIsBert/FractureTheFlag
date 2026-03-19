@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#102542">
+    <meta name="description" content="Errate Nationalflaggen mit so wenigen sichtbaren Kacheln wie moeglich.">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="assets/icons/icon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <title>Fracture The Flag</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero-card">
+        <p class="eyebrow">PWA Handyspiel</p>
+        <div class="hero-copy">
+          <h1>Fracture The Flag</h1>
+          <p>
+            Errate die Flagge, bevor du zu viele Fragmente sichtbar machst.
+            Jede Runde startet mit genau einer freien Kachel.
+          </p>
+        </div>
+        <div class="hero-stats" aria-label="Spielstatus">
+          <div>
+            <span class="label">Runde</span>
+            <strong id="roundLabel">0 / 0</strong>
+          </div>
+          <div>
+            <span class="label">Treffer</span>
+            <strong id="correctLabel">0</strong>
+          </div>
+          <div>
+            <span class="label">Fehlschlaege</span>
+            <strong id="wrongLabel">0</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="game-card">
+        <div class="flag-panel">
+          <div class="flag-frame">
+            <img id="flagImage" alt="" class="flag-image" hidden>
+            <button
+              id="flagRevealButton"
+              class="tile-grid"
+              type="button"
+              aria-label="Eine weitere Kachel aufdecken"
+            ></button>
+            <div id="roundOverlay" class="round-overlay" hidden></div>
+          </div>
+          <div class="visibility-bar" aria-label="Sichtbarer Anteil">
+            <div id="visibilityFill"></div>
+          </div>
+          <p id="visibilityText" class="visibility-text">Sichtbar: 0%</p>
+        </div>
+
+        <form id="guessForm" class="guess-panel" autocomplete="off">
+          <label for="countryGuess">Welches Land ist das?</label>
+          <div class="guess-row">
+            <input
+              id="countryGuess"
+              name="countryGuess"
+              type="text"
+              list="countryOptions"
+              placeholder="Land eingeben oder auswaehlen"
+              required
+            >
+            <datalist id="countryOptions"></datalist>
+            <button type="submit" class="primary-button">Pruefen</button>
+          </div>
+          <p class="helper-text">
+            Tippe auf die verdeckte Flagge, um eine weitere von 100 Kacheln freizulegen.
+          </p>
+        </form>
+
+        <div class="feedback-strip">
+          <p id="messageBox" class="message-box" aria-live="polite"></p>
+          <button id="nextButton" type="button" class="secondary-button" hidden>Naechste Flagge</button>
+          <button id="restartButton" type="button" class="secondary-button" hidden>Neu starten</button>
+        </div>
+      </section>
+
+      <section class="score-card">
+        <div>
+          <p class="eyebrow">Auswertung</p>
+          <h2>Dein Lauf</h2>
+        </div>
+        <dl class="score-grid">
+          <div>
+            <dt>Richtige Antworten</dt>
+            <dd id="scoreCorrect">0</dd>
+          </div>
+          <div>
+            <dt>Durchschnittliche Sichtbarkeit</dt>
+            <dd id="scoreAverage">0%</dd>
+          </div>
+          <div>
+            <dt>Verbleibende Flaggen</dt>
+            <dd id="scoreRemaining">0</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="credits-card">
+        <p class="eyebrow">Quellen</p>
+        <p>
+          Verwendete Flaggen stammen lokal aus dem Public-Domain-SVG-Paket von
+          Welt-Flaggen.de auf Basis von Wikimedia Commons.
+        </p>
+        <a href="data/flag-codes.json" class="source-link">Datensatz ansehen</a>
+      </section>
+    </main>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>

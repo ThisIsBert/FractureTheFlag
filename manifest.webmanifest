@@ -1,0 +1,23 @@
+{
+  "name": "Fracture The Flag",
+  "short_name": "Fracture",
+  "description": "Errate Nationalflaggen mit moeglichst wenigen sichtbaren Kacheln.",
+  "lang": "de-DE",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f7eed8",
+  "theme_color": "#102542",
+  "icons": [
+    {
+      "src": "assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "assets/icons/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
