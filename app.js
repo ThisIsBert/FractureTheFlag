@@ -342,7 +342,18 @@ const registerServiceWorker = async () => {
   }
 
   try {
-    await navigator.serviceWorker.register("sw.js");
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (refreshing) {
+        return;
+      }
+
+      refreshing = true;
+      window.location.reload();
+    });
+
+    const registration = await navigator.serviceWorker.register("sw.js");
+    await registration.update();
   } catch (error) {
     console.error("Service worker registration failed", error);
   }
