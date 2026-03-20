@@ -42,6 +42,7 @@ const EXTRA_ALIASES = {
 const elements = {
   flagFrame: document.querySelector(".flag-frame"),
   flagImage: document.querySelector("#flagImage"),
+  confettiLayer: document.querySelector("#confettiLayer"),
   flagRevealButton: document.querySelector("#flagRevealButton"),
   roundOverlay: document.querySelector("#roundOverlay"),
   visibilityBar: document.querySelector(".visibility-bar"),
@@ -66,8 +67,11 @@ const state = {
   finishedRound: false,
   correctCount: 0,
   wrongCount: 0,
-  successVisibilities: []
+  successVisibilities: [],
+  confettiTimeoutId: null
 };
+
+const CONFETTI_COLORS = ["#ce4a2d", "#f59e0b", "#166534", "#0f766e", "#102542", "#fdf2c4"];
 
 const normalize = (value) =>
   value
@@ -230,6 +234,59 @@ const setFlagFrameTone = (tone) => {
   elements.flagFrame.classList.add(tone === "success" ? "is-success" : "is-danger");
 };
 
+const clearConfetti = () => {
+  if (state.confettiTimeoutId) {
+    window.clearTimeout(state.confettiTimeoutId);
+    state.confettiTimeoutId = null;
+  }
+
+  elements.confettiLayer.replaceChildren();
+};
+
+const triggerWinConfetti = () => {
+  clearConfetti();
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  const pieceCount = 34;
+
+  for (let index = 0; index < pieceCount; index += 1) {
+    const piece = document.createElement("span");
+    const angle = (-110 + (220 / pieceCount) * index) * (Math.PI / 180);
+    const distance = 150 + Math.random() * 210;
+    const originX = (Math.random() - 0.5) * 180;
+    const driftX = Math.cos(angle) * distance;
+    const driftY = Math.sin(angle) * distance + 150 + Math.random() * 140;
+    const size = 0.4 + Math.random() * 0.55;
+    const shapeRoll = Math.random();
+
+    piece.className = "confetti-piece";
+    if (shapeRoll > 0.68) {
+      piece.classList.add("is-square");
+    } else if (shapeRoll < 0.18) {
+      piece.classList.add("is-ring");
+    }
+
+    piece.style.setProperty("--size", `${size}rem`);
+    piece.style.setProperty("--origin-x", `${Math.round(originX)}px`);
+    piece.style.setProperty("--drift-x", `${Math.round(driftX)}px`);
+    piece.style.setProperty("--drift-y", `${Math.round(driftY)}px`);
+    piece.style.setProperty("--rotation", `${Math.round((Math.random() - 0.5) * 1080)}deg`);
+    piece.style.setProperty(
+      "--confetti-color",
+      CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)]
+    );
+    piece.style.animationDelay = `${Math.round(Math.random() * 260)}ms`;
+    fragment.append(piece);
+  }
+
+  elements.confettiLayer.append(fragment);
+  state.confettiTimeoutId = window.setTimeout(clearConfetti, 2400);
+};
+
 const finishRound = (success) => {
   const visibility = getVisibilityPercent();
   state.finishedRound = true;
@@ -244,9 +301,11 @@ const finishRound = (success) => {
 
   if (success) {
     setFlagFrameTone("success");
+    triggerWinConfetti();
     state.correctCount += 1;
     state.successVisibilities.push(visibility);
   } else {
+    clearConfetti();
     setFlagFrameTone("danger");
     state.wrongCount += 1;
   }
@@ -263,6 +322,7 @@ const loadRound = () => {
   state.currentCountry = state.deck[state.currentIndex];
   state.revealed = new Set();
   state.finishedRound = false;
+  clearConfetti();
   elements.flagFrame.classList.remove("is-success", "is-danger");
   elements.flagImage.src = state.currentCountry.asset;
   elements.flagImage.alt = `Verdeckte Flagge von ${state.currentCountry.name}`;
