@@ -14,27 +14,12 @@
   <body>
     <main class="app-shell">
       <section class="hero-card">
-        <p class="eyebrow">PWA Handyspiel</p>
         <div class="hero-copy">
           <h1>Fracture The Flag</h1>
           <p>
-            Errate die Flagge, bevor du zu viele Fragmente sichtbar machst.
-            Jede Runde startet mit genau einer freien Kachel.
+            Errate die Flagge mit moeglichst wenig aufgedeckten Feldern.
+            Tippe auf die Flagge, um Felder sichtbar zu machen.
           </p>
-        </div>
-        <div class="hero-stats" aria-label="Spielstatus">
-          <div>
-            <span class="label">Runde</span>
-            <strong id="roundLabel">0 / 0</strong>
-          </div>
-          <div>
-            <span class="label">Treffer</span>
-            <strong id="correctLabel">0</strong>
-          </div>
-          <div>
-            <span class="label">Fehlschlaege</span>
-            <strong id="wrongLabel">0</strong>
-          </div>
         </div>
       </section>
 
@@ -57,29 +42,19 @@
         </div>
 
         <form id="guessForm" class="guess-panel" autocomplete="off">
-          <label for="countryGuess">Welches Land ist das?</label>
           <div class="guess-row">
             <input
               id="countryGuess"
               name="countryGuess"
               type="text"
               list="countryOptions"
-              placeholder="Land eingeben oder auswaehlen"
+              placeholder="Land eingeben oder auswählen"
               required
             >
             <datalist id="countryOptions"></datalist>
-            <button type="submit" class="primary-button">Pruefen</button>
+            <button id="guessSubmitButton" type="submit" class="primary-button">Raten</button>
           </div>
-          <p class="helper-text">
-            Tippe auf die verdeckte Flagge, um eine weitere von 100 Kacheln freizulegen.
-          </p>
         </form>
-
-        <div class="feedback-strip">
-          <p id="messageBox" class="message-box" aria-live="polite"></p>
-          <button id="nextButton" type="button" class="secondary-button" hidden>Naechste Flagge</button>
-          <button id="restartButton" type="button" class="secondary-button" hidden>Neu starten</button>
-        </div>
       </section>
 
       <section class="score-card">
@@ -89,16 +64,20 @@
         </div>
         <dl class="score-grid">
           <div>
-            <dt>Richtige Antworten</dt>
+            <dt>Runde</dt>
+            <dd id="scoreRound">0 von 0</dd>
+          </div>
+          <div>
+            <dt>Richtig</dt>
             <dd id="scoreCorrect">0</dd>
+          </div>
+          <div>
+            <dt>Falsch</dt>
+            <dd id="scoreWrong">0</dd>
           </div>
           <div>
             <dt>Durchschnittliche Sichtbarkeit</dt>
             <dd id="scoreAverage">0%</dd>
-          </div>
-          <div>
-            <dt>Verbleibende Flaggen</dt>
-            <dd id="scoreRemaining">0</dd>
           </div>
         </dl>
       </section>

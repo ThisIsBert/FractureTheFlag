@@ -40,24 +40,21 @@ const EXTRA_ALIASES = {
 };
 
 const elements = {
-  roundLabel: document.querySelector("#roundLabel"),
-  correctLabel: document.querySelector("#correctLabel"),
-  wrongLabel: document.querySelector("#wrongLabel"),
   flagFrame: document.querySelector(".flag-frame"),
   flagImage: document.querySelector("#flagImage"),
   flagRevealButton: document.querySelector("#flagRevealButton"),
   roundOverlay: document.querySelector("#roundOverlay"),
+  visibilityBar: document.querySelector(".visibility-bar"),
   visibilityFill: document.querySelector("#visibilityFill"),
   visibilityText: document.querySelector("#visibilityText"),
   guessForm: document.querySelector("#guessForm"),
   guessInput: document.querySelector("#countryGuess"),
+  guessSubmitButton: document.querySelector("#guessSubmitButton"),
   countryOptions: document.querySelector("#countryOptions"),
-  messageBox: document.querySelector("#messageBox"),
-  nextButton: document.querySelector("#nextButton"),
-  restartButton: document.querySelector("#restartButton"),
+  scoreRound: document.querySelector("#scoreRound"),
   scoreCorrect: document.querySelector("#scoreCorrect"),
+  scoreWrong: document.querySelector("#scoreWrong"),
   scoreAverage: document.querySelector("#scoreAverage"),
-  scoreRemaining: document.querySelector("#scoreRemaining")
 };
 
 const state = {
@@ -133,18 +130,24 @@ const shuffle = (items) => {
   return clone;
 };
 
-const setMessage = (text, tone = "") => {
-  elements.messageBox.textContent = text;
-  elements.messageBox.className = `message-box${tone ? ` is-${tone}` : ""}`;
+const isKnownCountryGuess = (guess) => {
+  const normalizedGuess = normalize(guess);
+  if (!normalizedGuess) {
+    return false;
+  }
+
+  return state.countries.some((country) =>
+    country.answers.some((answer) => normalize(answer) === normalizedGuess)
+  );
 };
 
 const getVisibilityPercent = () => Math.round((state.revealed.size / TILE_COUNT) * 100);
 
 const updateScoreboard = () => {
-  elements.roundLabel.textContent = `${Math.max(state.currentIndex + 1, 0)} / ${state.deck.length}`;
-  elements.correctLabel.textContent = String(state.correctCount);
-  elements.wrongLabel.textContent = String(state.wrongCount);
+  const currentRound = state.currentIndex >= 0 ? Math.min(state.currentIndex + 1, state.deck.length) : 0;
+  elements.scoreRound.textContent = `${currentRound} von ${state.deck.length}`;
   elements.scoreCorrect.textContent = String(state.correctCount);
+  elements.scoreWrong.textContent = String(state.wrongCount);
   const average =
     state.successVisibilities.length === 0
       ? 0
@@ -153,13 +156,31 @@ const updateScoreboard = () => {
             state.successVisibilities.length
         );
   elements.scoreAverage.textContent = `${average}%`;
-  elements.scoreRemaining.textContent = String(Math.max(state.deck.length - state.currentIndex - 1, 0));
 };
 
 const updateVisibility = () => {
   const percent = getVisibilityPercent();
   elements.visibilityFill.style.width = `${percent}%`;
   elements.visibilityText.textContent = `Sichtbar: ${percent}%`;
+  elements.visibilityText.className = "visibility-text";
+  elements.visibilityBar.hidden = false;
+};
+
+const showRoundResult = (success) => {
+  elements.visibilityBar.hidden = true;
+  elements.visibilityText.textContent = state.currentCountry.name;
+  elements.visibilityText.className = `visibility-text is-result is-${success ? "success" : "danger"}`;
+};
+
+const updateGuessButtonState = () => {
+  if (state.finishedRound) {
+    elements.guessSubmitButton.disabled = false;
+    elements.guessSubmitButton.textContent = "Nächste Runde";
+    return;
+  }
+
+  elements.guessSubmitButton.textContent = "Raten";
+  elements.guessSubmitButton.disabled = !isKnownCountryGuess(elements.guessInput.value);
 };
 
 const buildTiles = () => {
@@ -214,28 +235,20 @@ const finishRound = (success) => {
   state.finishedRound = true;
   revealAllTiles();
   elements.guessInput.disabled = true;
-  elements.nextButton.hidden = state.currentIndex >= state.deck.length - 1;
-  elements.restartButton.hidden = state.currentIndex < state.deck.length - 1;
   elements.flagRevealButton.ariaLabel =
     state.currentIndex >= state.deck.length - 1 ? "Neuen Lauf starten" : "Naechste Flagge starten";
   elements.roundOverlay.hidden = true;
   elements.roundOverlay.textContent = "";
+  showRoundResult(success);
+  updateGuessButtonState();
 
   if (success) {
     setFlagFrameTone("success");
     state.correctCount += 1;
     state.successVisibilities.push(visibility);
-    setMessage(
-      `Richtig: ${state.currentCountry.name}. Du hast die Flagge bei ${visibility}% Sichtbarkeit erkannt. Tippe auf die Flagge fuer die naechste Runde.`,
-      "success"
-    );
   } else {
     setFlagFrameTone("danger");
     state.wrongCount += 1;
-    setMessage(
-      `Falsch. Es war ${state.currentCountry.name}. Tippe auf die Flagge fuer die naechste Runde.`,
-      "danger"
-    );
   }
 
   updateScoreboard();
@@ -261,10 +274,8 @@ const loadRound = () => {
   elements.guessInput.disabled = false;
   elements.guessInput.value = "";
   elements.guessInput.focus();
-  elements.nextButton.hidden = true;
-  elements.restartButton.hidden = true;
-  setMessage("Eine Kachel ist offen. Rate jetzt oder decke mehr auf.");
   revealRandomTile();
+  updateGuessButtonState();
   updateScoreboard();
 };
 
@@ -291,8 +302,6 @@ const goToNextRound = () => {
 const finishGame = () => {
   state.finishedRound = true;
   elements.guessInput.disabled = true;
-  elements.nextButton.hidden = true;
-  elements.restartButton.hidden = false;
   const average =
     state.successVisibilities.length === 0
       ? 0
@@ -302,7 +311,7 @@ const finishGame = () => {
         );
   elements.roundOverlay.hidden = false;
   elements.roundOverlay.innerHTML = `Lauf beendet<br>${state.correctCount} Treffer / ${average}% im Schnitt`;
-  setMessage("Alle Flaggen wurden gespielt. Du kannst direkt einen neuen Lauf starten.");
+  updateGuessButtonState();
   updateScoreboard();
 };
 
@@ -366,6 +375,16 @@ elements.flagRevealButton.addEventListener("click", () => {
 elements.guessForm.addEventListener("submit", (event) => {
   event.preventDefault();
   if (state.finishedRound) {
+    if (state.currentIndex >= state.deck.length - 1) {
+      startGame();
+      return;
+    }
+
+    goToNextRound();
+    return;
+  }
+
+  if (!isKnownCountryGuess(elements.guessInput.value)) {
     return;
   }
 
@@ -377,10 +396,8 @@ elements.guessForm.addEventListener("submit", (event) => {
   finishRound(false);
 });
 
-elements.nextButton.addEventListener("click", goToNextRound);
-elements.restartButton.addEventListener("click", startGame);
+elements.guessInput.addEventListener("input", updateGuessButtonState);
 
 init().catch((error) => {
   console.error(error);
-  setMessage("Die App konnte nicht initialisiert werden.", "danger");
 });

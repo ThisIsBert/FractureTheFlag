@@ -76,9 +76,7 @@ body::before {
 }
 
 .hero-copy p,
-.credits-card p,
-.helper-text,
-.message-box {
+.credits-card p {
   margin: 0;
   color: var(--muted);
   line-height: 1.5;
@@ -92,15 +90,13 @@ body::before {
   color: var(--accent-dark);
 }
 
-.hero-stats,
 .score-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
   margin-top: 1rem;
 }
 
-.hero-stats div,
 .score-grid div {
   padding: 0.85rem;
   background: rgba(255, 255, 255, 0.55);
@@ -135,8 +131,6 @@ dd {
   overflow: hidden;
   border-radius: 1.25rem;
   border: 1px solid rgba(16, 37, 66, 0.14);
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  transition: border-color 220ms ease, box-shadow 220ms ease;
   background:
     linear-gradient(135deg, rgba(16, 37, 66, 0.08), rgba(16, 37, 66, 0.02)),
     linear-gradient(45deg, rgba(255, 255, 255, 0.72) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.72) 75%),
@@ -146,14 +140,32 @@ dd {
   aspect-ratio: 3 / 2;
 }
 
+.flag-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 0 transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease, box-shadow 220ms ease;
+  z-index: 3;
+}
+
 .flag-frame.is-success {
-  border-color: var(--success);
-  box-shadow: 0 0 0 0.42rem var(--success-glow), 0 0 1.4rem 0.2rem var(--success-glow);
+}
+
+.flag-frame.is-success::after {
+  opacity: 1;
+  box-shadow: inset 0 0 0 0.4rem var(--success), inset 0 0 0 0.44rem var(--success-glow);
 }
 
 .flag-frame.is-danger {
-  border-color: var(--danger);
-  box-shadow: 0 0 0 0.42rem var(--danger-glow), 0 0 1.4rem 0.2rem var(--danger-glow);
+}
+
+.flag-frame.is-danger::after {
+  opacity: 1;
+  box-shadow: inset 0 0 0 0.4rem var(--danger), inset 0 0 0 0.44rem var(--danger-glow);
 }
 
 .flag-image,
@@ -166,6 +178,7 @@ dd {
 
 .flag-image {
   object-fit: contain;
+  z-index: 1;
 }
 
 .tile-grid {
@@ -176,6 +189,7 @@ dd {
   border: 0;
   background: transparent;
   cursor: pointer;
+  z-index: 2;
 }
 
 .tile-grid:disabled {
@@ -203,6 +217,7 @@ dd {
   color: #fff;
   font-size: 1.1rem;
   pointer-events: none;
+  z-index: 4;
 }
 
 .visibility-bar {
@@ -226,6 +241,19 @@ dd {
   margin: 0.55rem 0 0;
   font-size: 0.92rem;
   color: var(--muted);
+}
+
+.visibility-text.is-result {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.visibility-text.is-success {
+  color: var(--success);
+}
+
+.visibility-text.is-danger {
+  color: var(--danger);
 }
 
 .guess-panel {
@@ -275,27 +303,15 @@ button:focus-visible {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
 }
 
+.primary-button:disabled {
+  color: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(135deg, #9aa6b2, #6b7280);
+  cursor: not-allowed;
+}
+
 .secondary-button {
   background: var(--accent-soft);
   color: var(--accent-dark);
-}
-
-.feedback-strip {
-  margin-top: 1rem;
-  display: grid;
-  gap: 0.65rem;
-}
-
-.message-box {
-  min-height: 1.5rem;
-}
-
-.message-box.is-success {
-  color: var(--success);
-}
-
-.message-box.is-danger {
-  color: var(--danger);
 }
 
 .score-card,
@@ -314,7 +330,6 @@ button:focus-visible {
     grid-template-columns: 1fr;
   }
 
-  .hero-stats,
   .score-grid {
     grid-template-columns: 1fr;
   }
