@@ -68,7 +68,8 @@ const state = {
   correctCount: 0,
   wrongCount: 0,
   successVisibilities: [],
-  confettiTimeoutId: null
+  confettiTimeoutId: null,
+  roundLoadToken: 0
 };
 
 const CONFETTI_COLORS = ["#ce4a2d", "#f59e0b", "#166534", "#0f766e", "#102542", "#fdf2c4"];
@@ -319,24 +320,55 @@ const isCorrectGuess = (guess) => {
 };
 
 const loadRound = () => {
+  const roundLoadToken = state.roundLoadToken + 1;
+  const nextAsset = state.deck[state.currentIndex].asset;
+  state.roundLoadToken = roundLoadToken;
   state.currentCountry = state.deck[state.currentIndex];
   state.revealed = new Set();
   state.finishedRound = false;
   clearConfetti();
   elements.flagFrame.classList.remove("is-success", "is-danger");
-  elements.flagImage.src = state.currentCountry.asset;
+  elements.flagImage.hidden = true;
   elements.flagImage.alt = `Verdeckte Flagge von ${state.currentCountry.name}`;
-  elements.flagImage.hidden = false;
-  elements.flagRevealButton.disabled = false;
+  elements.flagRevealButton.disabled = true;
   elements.flagRevealButton.ariaLabel = "Eine weitere Kachel aufdecken";
   elements.roundOverlay.hidden = true;
   elements.roundOverlay.textContent = "";
+  elements.guessInput.blur();
   elements.guessInput.disabled = false;
   elements.guessInput.value = "";
-  elements.guessInput.focus();
-  revealRandomTile();
   updateGuessButtonState();
   updateScoreboard();
+
+  loadImage(nextAsset)
+    .then((image) => {
+      if (state.roundLoadToken !== roundLoadToken || state.currentCountry?.asset !== nextAsset) {
+        return;
+      }
+
+      if (image.naturalWidth && image.naturalHeight) {
+        elements.flagFrame.style.aspectRatio = `${image.naturalWidth} / ${image.naturalHeight}`;
+      } else {
+        elements.flagFrame.style.aspectRatio = "3 / 2";
+      }
+
+      elements.flagImage.src = image.src;
+      elements.flagImage.hidden = false;
+      elements.flagRevealButton.disabled = false;
+      revealRandomTile();
+    })
+    .catch((error) => {
+      if (state.roundLoadToken !== roundLoadToken) {
+        return;
+      }
+
+      console.error("Flag image failed to load", error);
+      elements.flagFrame.style.aspectRatio = "3 / 2";
+      elements.flagImage.src = nextAsset;
+      elements.flagImage.hidden = false;
+      elements.flagRevealButton.disabled = false;
+      revealRandomTile();
+    });
 };
 
 const startGame = () => {
@@ -395,6 +427,14 @@ const updateFlagAspectRatio = () => {
   }
   elements.flagFrame.style.aspectRatio = `${naturalWidth} / ${naturalHeight}`;
 };
+
+const loadImage = (src) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = src;
+  });
 
 const registerServiceWorker = async () => {
   if (!("serviceWorker" in navigator)) {
